@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Тестовое задание | Павел Литвин</title>
+    <style>
+        body {
+            background: #f1f1f1;
+        }
+        
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            background: #fff;
+        }
+        
+        .result {
+            display: grid;
+            grid-template-columns: repeat(1, 1fr);
+            grid-gap: 20px;
+            margin: 20px auto;
+        }
+        
+        .result>div {
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+            width: 100%;
+        }
+        
+        .result>div span:last-child {
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding-left: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: block;
+            margin: 5px 0;
+            min-height: 23px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="file">
+            <input type="file" name="xmlfile" id="xmlfile" accept=".xml">
+            <span id="message"></span>
+        </div>
+        <div class="result">
+            <div>
+                <span>1. Число внутренних ссылок:</span>
+                <span id="first"></span>
+            </div>
+            <div>
+                <span>2. Суммарное число букв внутри тегов, не включая пробельные символы:</span>
+                <span id="second"></span>
+            </div>
+            <div>
+                <span>3. Суммарное число букв нормализованного текста внутри тегов, включая пробелы:</span>
+                <span id="third"></span>
+            </div>
+            <div>
+                <span>4. Число битых внутренних ссылок (ссылки на несуществующие ID элементов)</span>
+                <span id="last"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function getXMLPageAsync(url) {
+            let response, text, xml;
+            response = await fetch(`${url}`);
+            text = await response.text();
+            xml = await (new window.DOMParser()).parseFromString(text, "text/xml");
+            return xml;
+        }
+
+        let firstLastQuest = (xmlDoc) => {
+            let linkList = xmlDoc.querySelectorAll('a'),
+                linkCount = 0,
+                linkBroken = 0;
+
+            linkList.forEach(link => {
+                if (link.getAttribute('l:href').charAt(0) === '#') {
+                    linkCount++
+                };
+                if (xmlDoc.getElementById(`${link.getAttribute('l:href').slice(1)}`) == null) {
+                    linkBroken++
+                }
+            })
+            print('first', linkCount);
+            print('last', linkBroken);
+        }
+
+        let secondThirdQuest = (xmlDoc) => {
+            print('second', xmlDoc.documentElement.textContent.replace(/\s/g, '').length);
+            print('third', xmlDoc.documentElement.textContent.normalize().length);
+        }
+
+        let print = (id, value) => {
+            document.getElementById(`${id}`).textContent = `${value}`
+        }
+
+        document.getElementById('xmlfile').onchange = function() {
+            if (this.files[0]) {
+                getXMLPageAsync(`${this.value.replace("C:\\fakepath\\", "")}`)
+                    .then(data => {
+                        firstLastQuest(data);
+                        secondThirdQuest(data);
+                    })
+                    .catch(error => {
+                        console.error(error)
+                        document.getElementById('message').textContent = 'Не удалось загрузить файл';
+                    })
+            } else {
+                document.getElementById('message').textContent = 'Пожалуйста, выберите файл';
+            }
+        };
+    </script>
+</body>
+
+</html>
