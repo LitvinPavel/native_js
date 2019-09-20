@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+
+<body>
+  <script>
+    async function getFile(url) {
+      let response, text;
+      response = await fetch(`${url}`);
+      text = await response.text();
+      return text;
+    }
+
+    getFile(`./RW05_LATK1M`)
+      .then(response => {
+        let data = response.split('\n'),
+            jsonData = [];
+        
+        data.forEach(elm => {
+          let json = elm.split(',');
+          function arrToObj(lat, lon) {
+            jsonData.push({
+              lat: +lat,
+              lon: +lon,
+            });
+          };
+          arrToObj(...json);
+        })
+
+        function download(content, fileName, contentType) {
+          let a = document.createElement('a'),
+              file = new Blob([content], { type: contentType });
+
+          a.href = URL.createObjectURL(file);
+          a.download = fileName;
+          a.click();
+        }
+        download(JSON.stringify(jsonData), 'RW05_LATK1M.json', 'application/json');
+
+      })
+      .catch(error => {
+        console.error(error);
+      })  
+  </script>
+</body>
+
+</html>
